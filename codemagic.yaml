@@ -1,0 +1,117 @@
+workflows:
+  ios-workflow:
+    name: iOS Build
+    max_build_duration: 60
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+    cache_paths:
+      - ~/.pub-cache
+      - ios/Pods
+    scripts:
+      - name: Set up Flutter
+        script: |
+          flutter pub get
+          flutter pub run flutter_launcher_icons
+      - name: Set up iOS dependencies
+        script: |
+          cd ios
+          pod install
+          cd ..
+      - name: Build iOS
+        script: |
+          flutter build ios --release --no-codesign
+    artifacts:
+      - build/ios/iphoneos/Runner.app
+      - build/ios/iphoneos/Runner.app.dSYM.zip
+    publishing:
+      app_store_connect:
+        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
+        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
+        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+        submit_to_app_store: false
+      google_play:
+        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+        track: internal
+    environment_variables:
+      - name: CM_CERTIFICATE
+        value: $CM_CERTIFICATE
+      - name: CM_CERTIFICATE_PASSWORD
+        value: $CM_CERTIFICATE_PASSWORD
+      - name: CM_PROVISIONING_PROFILE
+        value: $CM_PROVISIONING_PROFILE
+
+  android-workflow:
+    name: Android Build
+    max_build_duration: 60
+    environment:
+      flutter: stable
+      java: 17
+    cache_paths:
+      - ~/.pub-cache
+      - ~/.gradle
+    scripts:
+      - name: Set up Flutter
+        script: |
+          flutter pub get
+          flutter pub run flutter_launcher_icons
+      - name: Build Android APK
+        script: |
+          flutter build apk --release
+      - name: Build Android AAB
+        script: |
+          flutter build appbundle --release
+    artifacts:
+      - build/app/outputs/apk/release/app-release.apk
+      - build/app/outputs/bundle/release/app-release.aab
+    publishing:
+      google_play:
+        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+        track: internal
+        in_app_update_priority: 3
+        rollout_fraction: 0.1
+
+  # Combined workflow for both platforms
+  build-and-deploy:
+    name: Build and Deploy
+    max_build_duration: 120
+    environment:
+      flutter: stable
+      xcode: latest
+      java: 17
+      cocoapods: default
+    cache_paths:
+      - ~/.pub-cache
+      - ~/.gradle
+      - ios/Pods
+    scripts:
+      - name: Set up Flutter
+        script: |
+          flutter pub get
+          flutter pub run flutter_launcher_icons
+      - name: Build Android
+        script: |
+          flutter build apk --release
+          flutter build appbundle --release
+      - name: Set up iOS dependencies
+        script: |
+          cd ios
+          pod install
+          cd ..
+      - name: Build iOS
+        script: |
+          flutter build ios --release --no-codesign
+    artifacts:
+      - build/app/outputs/apk/release/app-release.apk
+      - build/app/outputs/bundle/release/app-release.aab
+      - build/ios/iphoneos/Runner.app
+    publishing:
+      google_play:
+        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+        track: internal
+      app_store_connect:
+        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
+        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
+        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+        submit_to_app_store: false
