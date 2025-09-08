@@ -1,0 +1,24 @@
+
+platform :ios, '12.0'
+
+# CocoaPods analytics sends network stats, disable if you wish.
+ENV['COCOAPODS_DISABLE_STATS'] = 'true'
+
+source 'https://github.com/CocoaPods/Specs.git'
+
+project 'Runner', {
+  'Debug' => :debug,
+  'Release' => :release,
+}
+
+target 'Runner' do
+  use_frameworks!
+  use_modular_headers!
+
+  # Firebase dependencies
+  pod 'Firebase/Core'
+  pod 'Firebase/Analytics'
+  pod 'Firebase/Auth'
+  pod 'Firebase/Firestore'
+  pod 'Firebase/Messaging'
+end
