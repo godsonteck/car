@@ -1,5 +1,5 @@
 
-platform :ios, '12.0'
+platform :ios, '13.0'
 
 # CocoaPods analytics sends network stats, disable if you wish.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
@@ -21,4 +21,7 @@ target 'Runner' do
   pod 'Firebase/Auth'
   pod 'Firebase/Firestore'
   pod 'Firebase/Messaging'
+
+  # Google Maps dependency
+  pod 'GoogleMaps', '8.4.0'
 end
