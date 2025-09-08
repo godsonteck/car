@@ -1003,9 +1003,9 @@ class _AdminScreenState extends State<AdminScreen>
               child: const Text('Cancel'),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 try {
-                  userService.deleteUser(user.id);
+                  await userService.deleteUser(user.id);
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(

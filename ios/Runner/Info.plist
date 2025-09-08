@@ -53,5 +53,18 @@
 	<string>This app needs access to your location to provide GPS tracking and navigation services even when the app is in the background.</string>
 	<key>GMSApiKey</key>
 	<string>10b627b87f95d9944f956290a6876220</string>
+	<key>NSCameraUsageDescription</key>
+	<string>This app needs access to your camera to take photos for vehicle documentation and user profiles.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app needs access to your photo library to select images for vehicle documentation and user profiles.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app needs access to your microphone for video calls and voice notes in support.</string>
+	<key>NSUserNotificationsUsageDescription</key>
+	<string>This app needs permission to send you notifications for booking updates and important alerts.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>remote-notification</string>
+	</array>
 </dict>
 </plist>

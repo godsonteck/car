@@ -13,10 +13,13 @@ class UserService with ChangeNotifier {
   Future<void> registerDeviceToken(String deviceToken) async {
     if (_currentUser == null) return;
     _currentUser = _currentUser!.copyWith(deviceToken: deviceToken);
-    await _firestore.collection('users').doc(_currentUser!.id).update({'deviceToken': deviceToken});
+    await _firestore.collection('users').doc(_currentUser!.id).update({
+      'deviceToken': deviceToken,
+    });
     AppLogger.info('Device token registered for user: ${_currentUser!.email}');
     notifyListeners();
   }
+
   final List<User> _users = [];
   User? _currentUser;
   static const String _currentUserKey = 'current_user';
@@ -33,7 +36,9 @@ class UserService with ChangeNotifier {
   Future<void> _initializeService() async {
     try {
       await _loadUsers();
-      AppLogger.info('Users loaded from database: ${_users.length} users found');
+      AppLogger.info(
+        'Users loaded from database: ${_users.length} users found',
+      );
       await _loadCurrentUser();
       AppLogger.info('Current user loaded: ${_currentUser?.email ?? "None"}');
       // Always check for missing default users and add them
@@ -44,15 +49,21 @@ class UserService with ChangeNotifier {
     }
   }
 
-  List<User> get users => _users.where((user) => user.isActive && user.registrationStatus == 'approved').toList();
+  List<User> get users => _users
+      .where((user) => user.isActive && user.registrationStatus == 'approved')
+      .toList();
   List<User> get allUsers => _users;
   List<User> get customers => _users.where((user) => user.isCustomer).toList();
   List<User> get admins => _users.where((user) => user.isAdmin).toList();
   List<User> get staff => _users.where((user) => user.isStaff).toList();
-  List<User> get inactiveUsers => _users.where((user) => !user.isActive).toList();
-  List<User> get pendingUsers => _users.where((user) => user.registrationStatus == 'pending').toList();
-  List<User> get approvedUsers => _users.where((user) => user.registrationStatus == 'approved').toList();
-  List<User> get rejectedUsers => _users.where((user) => user.registrationStatus == 'rejected').toList();
+  List<User> get inactiveUsers =>
+      _users.where((user) => !user.isActive).toList();
+  List<User> get pendingUsers =>
+      _users.where((user) => user.registrationStatus == 'pending').toList();
+  List<User> get approvedUsers =>
+      _users.where((user) => user.registrationStatus == 'approved').toList();
+  List<User> get rejectedUsers =>
+      _users.where((user) => user.registrationStatus == 'rejected').toList();
 
   User? get currentUser => _currentUser;
   bool get isLoggedIn => _currentUser != null;
@@ -86,19 +97,25 @@ class UserService with ChangeNotifier {
   }) async {
     // Basic client-side duplicate check
     if (_users.any((user) => user.email == email)) {
-      throw Exception('This email is already registered. Please use a different email.');
+      throw Exception(
+        'This email is already registered. Please use a different email.',
+      );
     }
 
     try {
       // Create Firebase Auth user so they appear in Firebase Authentication console
-      AppLogger.info('Attempting FirebaseAuth.createUserWithEmailAndPassword for $email');
-      print('Attempting FirebaseAuth.createUserWithEmailAndPassword for $email');
-      final userCredential = await fb_auth.FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
+      AppLogger.info(
+        'Attempting FirebaseAuth.createUserWithEmailAndPassword for $email',
       );
+      print(
+        'Attempting FirebaseAuth.createUserWithEmailAndPassword for $email',
+      );
+      final userCredential = await fb_auth.FirebaseAuth.instance
+          .createUserWithEmailAndPassword(email: email, password: password);
 
-      final String uid = userCredential.user?.uid ?? DateTime.now().millisecondsSinceEpoch.toString();
+      final String uid =
+          userCredential.user?.uid ??
+          DateTime.now().millisecondsSinceEpoch.toString();
       AppLogger.info('FirebaseAuth user created: $email (uid: $uid)');
 
       final newUser = User(
@@ -116,29 +133,41 @@ class UserService with ChangeNotifier {
         isIdVerified: idNumber != null && idType != null,
       );
 
-  _users.add(newUser);
-  // Set app-level current user so app state matches FirebaseAuth
-  setCurrentUser(newUser);
-  notifyListeners();
+      _users.add(newUser);
+      // Set app-level current user so app state matches FirebaseAuth
+      setCurrentUser(newUser);
+      notifyListeners();
 
       // Persist the new user document to Firestore immediately
       try {
-            final currentAuthUid = fb_auth.FirebaseAuth.instance.currentUser?.uid;
-            AppLogger.info('Current FirebaseAuth signed-in UID before Firestore write: $currentAuthUid');
-            print('Current FirebaseAuth signed-in UID before Firestore write: $currentAuthUid');
+        final currentAuthUid = fb_auth.FirebaseAuth.instance.currentUser?.uid;
+        AppLogger.info(
+          'Current FirebaseAuth signed-in UID before Firestore write: $currentAuthUid',
+        );
+        print(
+          'Current FirebaseAuth signed-in UID before Firestore write: $currentAuthUid',
+        );
 
         await _firestore.collection('users').doc(uid).set(newUser.toMap());
-        AppLogger.info('Registered user saved to Firestore: $email (uid: $uid)');
-            print('Registered user saved to Firestore: $email (uid: $uid)');
+        AppLogger.info(
+          'Registered user saved to Firestore: $email (uid: $uid)',
+        );
+        print('Registered user saved to Firestore: $email (uid: $uid)');
       } catch (e, st) {
-        AppLogger.error('Failed to persist registered user to Firestore: $e', e, st);
+        AppLogger.error(
+          'Failed to persist registered user to Firestore: $e',
+          e,
+          st,
+        );
         // Also print to stdout so flutter run shows it immediately
         print('Failed to persist registered user to Firestore: $e');
         print(st);
       }
     } on fb_auth.FirebaseAuthException catch (e) {
       // Re-throw useful message for the UI
-      AppLogger.error('FirebaseAuthException during registration: ${e.message}');
+      AppLogger.error(
+        'FirebaseAuthException during registration: ${e.message}',
+      );
       print('FirebaseAuthException during registration: ${e.message}');
       throw Exception(e.message ?? 'Failed to create user: ${e.code}');
     } catch (e, st) {
@@ -160,12 +189,54 @@ class UserService with ChangeNotifier {
     }
   }
 
-  void deleteUser(String userId) {
+  Future<void> deleteUser(String userId) async {
     final index = _users.indexWhere((user) => user.id == userId);
     if (index != -1) {
-      _users.removeAt(index);
-      _saveUsers();
-      notifyListeners();
+      final userToDelete = _users[index];
+
+      try {
+        // Delete from Firestore first
+        await _firestore.collection('users').doc(userId).delete();
+        AppLogger.info('User document deleted from Firestore: $userId');
+
+        // Try to delete from Firebase Auth
+        // Note: This will only work if the current user is deleting themselves
+        // or if using Firebase Admin SDK (which requires server-side implementation)
+        try {
+          final currentUser = fb_auth.FirebaseAuth.instance.currentUser;
+          if (currentUser != null && currentUser.uid == userId) {
+            // User is deleting themselves
+            await currentUser.delete();
+            AppLogger.info('User deleted from Firebase Auth: $userId');
+          } else {
+            // Admin trying to delete another user - this will fail without Admin SDK
+            AppLogger.warning(
+              'Cannot delete other users from Firebase Auth without Admin SDK. User $userId remains in Auth but is marked as deleted in app.',
+            );
+          }
+        } catch (authError) {
+          AppLogger.error(
+            'Failed to delete user from Firebase Auth: $authError',
+          );
+          // Continue with local deletion even if Auth deletion fails
+        }
+
+        // Remove from local list
+        _users.removeAt(index);
+
+        // Save updated users list to Firestore (this will overwrite all users, effectively removing the deleted one)
+        await _saveUsers();
+
+        notifyListeners();
+        AppLogger.info(
+          'User successfully deleted from local storage: ${userToDelete.email}',
+        );
+      } catch (e) {
+        AppLogger.error('Error deleting user $userId: $e');
+        throw Exception('Failed to delete user: $e');
+      }
+    } else {
+      throw Exception('User not found');
     }
   }
 
@@ -216,12 +287,15 @@ class UserService with ChangeNotifier {
   List<User> searchUsers(String query) {
     if (query.isEmpty) return _users;
     final lowercaseQuery = query.toLowerCase();
-    return _users.where((user) =>
-      user.name.toLowerCase().contains(lowercaseQuery) ||
-      user.email.toLowerCase().contains(lowercaseQuery) ||
-      user.phone.toLowerCase().contains(lowercaseQuery) ||
-      user.userType.toLowerCase().contains(lowercaseQuery)
-    ).toList();
+    return _users
+        .where(
+          (user) =>
+              user.name.toLowerCase().contains(lowercaseQuery) ||
+              user.email.toLowerCase().contains(lowercaseQuery) ||
+              user.phone.toLowerCase().contains(lowercaseQuery) ||
+              user.userType.toLowerCase().contains(lowercaseQuery),
+        )
+        .toList();
   }
 
   void loadMockUsers() {
@@ -253,7 +327,9 @@ class UserService with ChangeNotifier {
       );
       _users.add(adminUser);
       addedUsers = true;
-      AppLogger.info('Added admin user: ${adminUser.email} with password: ${adminUser.password}');
+      AppLogger.info(
+        'Added admin user: ${adminUser.email} with password: ${adminUser.password}',
+      );
     }
 
     // Add default staff if it doesn't exist
@@ -273,13 +349,17 @@ class UserService with ChangeNotifier {
       );
       _users.add(staffUser);
       addedUsers = true;
-      AppLogger.info('Added staff user: ${staffUser.email} with password: ${staffUser.password}');
+      AppLogger.info(
+        'Added staff user: ${staffUser.email} with password: ${staffUser.password}',
+      );
     }
 
     if (addedUsers) {
       _saveUsers();
       notifyListeners();
-      AppLogger.info('Users list after adding users: ${_users.map((u) => u.email).toList()}');
+      AppLogger.info(
+        'Users list after adding users: ${_users.map((u) => u.email).toList()}',
+      );
     } else {
       AppLogger.info('Default users already exist in users list');
     }
@@ -309,7 +389,10 @@ class UserService with ChangeNotifier {
       _users.clear();
       _users.addAll(users);
       notifyListeners();
-      endPerf('loadUsers', details: 'Loaded ${_users.length} users from Firestore');
+      endPerf(
+        'loadUsers',
+        details: 'Loaded ${_users.length} users from Firestore',
+      );
     } catch (e) {
       endPerf('loadUsers', details: 'Error: $e');
       AppLogger.error('Error loading users from Firestore: $e');
@@ -341,8 +424,14 @@ class UserService with ChangeNotifier {
       for (final entry in parsedData.entries) {
         final key = entry.key;
         dynamic value = entry.value;
-        if (key == 'isActive' || key == 'isAdmin' || key == 'isStaff' || key == 'isCustomer' || key == 'isIdVerified') {
-          result[key] = value is bool ? value : (value is String ? value.toLowerCase() == 'true' : false);
+        if (key == 'isActive' ||
+            key == 'isAdmin' ||
+            key == 'isStaff' ||
+            key == 'isCustomer' ||
+            key == 'isIdVerified') {
+          result[key] = value is bool
+              ? value
+              : (value is String ? value.toLowerCase() == 'true' : false);
         } else if (key == 'createdAt' || key == 'lastLogin') {
           if (value is String) {
             try {
@@ -398,7 +487,10 @@ class UserService with ChangeNotifier {
         batch.set(docRef, user.toMap());
       }
       await batch.commit();
-      endPerf('saveUsers', details: 'Saved ${_users.length} users to Firestore');
+      endPerf(
+        'saveUsers',
+        details: 'Saved ${_users.length} users to Firestore',
+      );
     } catch (e) {
       endPerf('saveUsers', details: 'Error: $e');
       AppLogger.error('Error saving users to Firestore: $e');
