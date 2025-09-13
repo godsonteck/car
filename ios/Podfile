@@ -26,7 +26,7 @@ target 'Runner' do
   pod 'Firebase/Messaging'
 
   # Google Maps dependency
-  pod 'GoogleMaps', '8.4.0'
+  pod 'GoogleMaps'
 end
 
 post_install do |installer|

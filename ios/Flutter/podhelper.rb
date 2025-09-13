@@ -21,7 +21,7 @@ def flutter_additional_ios_build_settings(target)
   flutter_root = flutter_root()
   target.build_configurations.each do |config|
     config.build_settings['ENABLE_BITCODE'] = 'NO'
-    config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
+    config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '14.0'
     config.build_settings['ONLY_ACTIVE_ARCH'] = 'YES' if config.name == 'Debug'
     config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= [
       '$(inherited)',
