@@ -16,7 +16,7 @@ target 'Runner' do
 
   # Flutter Pods
   flutter_application_path = '../'
-  load File.join(flutter_application_path, '.ios', 'Flutter', 'podhelper.rb')
+  load File.join(flutter_application_path, 'ios', 'Flutter', 'podhelper.rb')
 
   # Firebase dependencies
   pod 'Firebase/Core'
