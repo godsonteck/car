@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Car</string>
+	<string>Car Rental</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -13,7 +13,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>car</string>
+	<string>car_rental</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -45,26 +45,5 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>This app needs access to your location to provide GPS tracking and navigation services.</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>This app needs access to your location to provide GPS tracking and navigation services even when the app is in the background.</string>
-	<key>NSLocationAlwaysUsageDescription</key>
-	<string>This app needs access to your location to provide GPS tracking and navigation services even when the app is in the background.</string>
-	<key>GMSApiKey</key>
-	<string>10b627b87f95d9944f956290a6876220</string>
-	<key>NSCameraUsageDescription</key>
-	<string>This app needs access to your camera to take photos for vehicle documentation and user profiles.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>This app needs access to your photo library to select images for vehicle documentation and user profiles.</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>This app needs access to your microphone for video calls and voice notes in support.</string>
-	<key>NSUserNotificationsUsageDescription</key>
-	<string>This app needs permission to send you notifications for booking updates and important alerts.</string>
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>fetch</string>
-		<string>remote-notification</string>
-	</array>
 </dict>
 </plist>

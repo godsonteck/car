@@ -1,5 +1,11 @@
 # Project-level configuration.
 cmake_minimum_required(VERSION 3.14)
+
+# Force the generator to Visual Studio 18 2022 to match installed VS version
+if(NOT DEFINED CMAKE_GENERATOR)
+  set(CMAKE_GENERATOR "Visual Studio 18 2022" CACHE STRING "" FORCE)
+endif()
+
 project(car LANGUAGES CXX)
 
 # The name of the executable created for the application. Change this to change
